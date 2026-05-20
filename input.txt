@@ -1,0 +1,69 @@
+# Archivo de prueba - Simulador de Gestion de Memoria Paginada
+# EdD Proyecto II - Semestre I 2026
+
+MEMORIA_TOTAL 65536
+TAMANO_PAGINA 1024
+TAMANO_CACHE_GLOBAL 8
+
+# ---- Caso 1: Creacion de procesos validos ----
+NEW_PROCESS P1 4096
+NEW_PROCESS P2 8192
+NEW_PROCESS P3 2048
+
+# ---- Caso 2: Proceso duplicado (error esperado) ----
+NEW_PROCESS P1 1024
+
+# ---- Caso 3: Accesos a memoria ----
+ACCESS P1 100
+ACCESS P1 2500
+ACCESS P2 7000
+ACCESS P1 100
+
+# ---- Caso 4: Acceso a proceso inexistente (error esperado) ----
+ACCESS P9 500
+
+# ---- Caso 5: Asignacion adicional de memoria ----
+ALLOCATE P1 2048
+PRINT_PROCESS P1
+
+# ---- Caso 6: Mas accesos para llenar cache ----
+ACCESS P1 0
+ACCESS P1 1024
+ACCESS P1 2048
+ACCESS P1 3072
+ACCESS P1 4096
+ACCESS P1 5120
+
+# ---- Caso 7: Estado del sistema ----
+PRINT_STATE
+
+# ---- Caso 8: Liberacion parcial de memoria ----
+FREE P2 2048 2048
+PRINT_PROCESS P2
+
+# ---- Caso 9: Liberacion invalida (error esperado) ----
+FREE P2 30000 1024
+
+# ---- Caso 10: Accesos multiples para demostrar LRU ----
+ACCESS P2 0
+ACCESS P2 1024
+ACCESS P2 4096
+ACCESS P2 5120
+ACCESS P2 6144
+ACCESS P3 0
+ACCESS P3 1024
+
+# ---- Caso 11: Finalizacion de procesos ----
+END_PROCESS P1
+END_PROCESS P2
+END_PROCESS P3
+
+# ---- Caso 12: Finalizar proceso inexistente (error esperado) ----
+END_PROCESS P99
+
+# ---- Caso 13: Creacion con memoria insuficiente ----
+NEW_PROCESS PBIG 99999999
+
+# ---- Estado final y metricas ----
+PRINT_STATE
+PRINT_METRICS
