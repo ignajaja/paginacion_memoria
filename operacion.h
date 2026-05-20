@@ -70,7 +70,7 @@ class Operacion{
             mem->printState();
             return true;
         }
-        if(operacion == "PRINT_METRICAS"){
+        if(operacion == "PRINT_METRICS"){
             mem->printMetricas();
             return true;
         }
@@ -154,8 +154,6 @@ class Operacion{
                 }
                 if (memTotal > 0 && tamPag > 0 && cacheGlobal > 0 && !operaciones.empty()){
                     finalizado = true;
-                } else {
-                    operaciones.push_back(linea);
                 }
             }
         }
@@ -192,6 +190,7 @@ class Operacion{
             cin >> tamPag;
             cout << "Tamaño de caché global: ";
             cin >> cacheGlobal;
+            cin.ignore();
 
             if(memTotal <= 0 || tamPag <= 0){
                 cout << "! Error, ingrese parámetros válidos" << endl;
@@ -199,6 +198,9 @@ class Operacion{
             }
 
             mem = new Memoria(memTotal, tamPag, cacheGlobal);
+            
+            string linea;
+            while(true){
 
             cout << "Comandos: " << endl; 
             cout << " - NEW_PROCESS <id> <memoria>" << endl;
@@ -211,8 +213,6 @@ class Operacion{
             cout << " - PRINT_PROCESS" << endl;
             cout << " - EXIT" << endl;
 
-            string linea;
-            while(true){
                 cout << ":";
                 if(!getline(cin,linea)) break;
                 if(linea == "EXIT"){

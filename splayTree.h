@@ -160,7 +160,7 @@ class SplayTree{
     }
 
     bool contiene(const K& llave){
-        return busca(llave) != nullptr;
+        return buscar(llave) != nullptr;
     }
 
     void hacerSplay(const K& llave){

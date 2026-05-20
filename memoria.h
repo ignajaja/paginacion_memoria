@@ -56,6 +56,7 @@ class Memoria{
 };
 
 Memoria::Memoria(int memTotal, int tPagina, int tCacheGlobal): memoriaTotal(memTotal), tamPagina(tPagina), tamCacheGlobal(tCacheGlobal), cacheGlobal(tCacheGlobal){
+    totalPaginas = memoriaTotal / tamPagina;
     for (int i = 0; i < totalPaginas; i++){
         Pagina p;
         p.paginaFisica = i;

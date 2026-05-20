@@ -52,11 +52,11 @@ private: // primero hacemos todas las funciones
     }
 
     Nodo* rotarIzquierda(Nodo* x){
-        Nodo* y = x->izq;
-        Nodo* t = y->der; // t es un temporario que nos va a ayudar a guardar un nodo mientras cambiamos las posiciones
+        Nodo* y = x->der;
+        Nodo* t = y->izq; // t es un temporario que nos va a ayudar a guardar un nodo mientras cambiamos las posiciones
 
-        y->der = x;
-        x->izq = t;
+        y->izq = x;
+        x->der = t;
 
         actualizarAltura(x);
         actualizarAltura(y);
@@ -168,7 +168,7 @@ private: // primero hacemos todas las funciones
         delete n;
     }
 
-    void recolectarLlaves(Nodo* n, vector<K>* llaves) const {
+    void recolectarLlaves(Nodo* n, vector<K>& llaves) const {
         if(!n) return;
         recolectarLlaves(n->izq, llaves);
         llaves.push_back(n->llave);
