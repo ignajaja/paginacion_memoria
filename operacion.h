@@ -75,7 +75,6 @@ class Operacion{
             return true;
         }
         if(operacion == "PRINT_PROCESS"){
-            cout << "procesoooooooooooooo" << endl;
             if(tokens.size() < 2){
                 cout << "! Error, para hacer un PRINT_PROCESS debe escribirse \"PRINT_PROCESS <idProceso>\"" << endl;
                 return false;
@@ -160,7 +159,7 @@ class Operacion{
             cout << "La memoria no es múltiplo del tamaño de página, se usará " << memTotal / tamPag << " páginas" << endl;
         }
         mem = new Memoria(memTotal, tamPag, cacheGlobal);
-        
+
         for (const auto& op : operaciones){
             try {
                 parseExecute(op);
