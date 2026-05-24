@@ -8,20 +8,20 @@ using namespace std;
 
 class Pagina{
 public:
-    int paginaVirtual;
-    int paginaFisica;
+    int numeroPaginasVirtual;
+    int numeroPaginasFisica;
     string idProceso;
-    bool valido;
-    bool modificado;
-    int cantidadReferencia;
+    bool bitValida;
+    bool bitModificada;
+    int cantidadReferencias;
     long long ultimaReferencia;
 
-    Pagina (): paginaVirtual(-1), paginaFisica(-1), idProceso(""), valido(false), modificado(false), cantidadReferencia(0), ultimaReferencia(0) {}
+    Pagina (): numeroPaginasVirtual(-1), numeroPaginasFisica(-1), idProceso(""), bitValida(false), bitModificada(false), cantidadReferencias(0), ultimaReferencia(0) {}
 
-    Pagina(int pv, int pf, string idp) : paginaVirtual(pv), paginaFisica(pf), idProceso(idp), valido(true), modificado(false), cantidadReferencia(0), ultimaReferencia(0) {}
+    Pagina(int pv, int pf, string idp) : numeroPaginasVirtual(pv), numeroPaginasFisica(pf), idProceso(idp), bitValida(true), bitModificada(false), cantidadReferencias(0), ultimaReferencia(0) {}
 
     void touch() {
-        cantidadReferencia++;
+        cantidadReferencias++;
         ultimaReferencia = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
     }
 
@@ -31,5 +31,5 @@ public:
 };
 
 void Pagina::mostrar() const{
-    cout << " Pagina[pv=" << paginaVirtual << " pf=" << paginaFisica << " idP=" << idProceso << " valido=" << valido << " modificado=" << modificado << " referencias=" << cantidadReferencia << "]" << endl;
+    cout << " Pagina[pv=" << numeroPaginasVirtual << " pf=" << numeroPaginasFisica << " idP=" << idProceso << " bitValida=" << bitValida << " bitModificada=" << bitModificada << " referencias=" << cantidadReferencias << "]" << endl;
 }

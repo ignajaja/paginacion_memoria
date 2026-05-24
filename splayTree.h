@@ -20,60 +20,70 @@ class SplayTree{
 
     Nodo* raiz;
     int cantidadNodos;
-    
 
-    Nodo* rotacionSimpleIzq(Nodo* x){
+    // rotación hacia la derecha simple
+    Nodo* rotacionZig(Nodo* x){
         Nodo* y = x->izq;
         x->izq = y->der;
         y->der = x;
         return y;
     }
 
-    Nodo* rotacionSimpleDer(Nodo* x){
+    // rotación hacia la izquierda simple
+    Nodo* rotacionZag(Nodo* x){
         Nodo* y = x->der;
         x->der = y->izq;
         y->izq = x;
         return y;
     }
 
+    // rotación zig-zag: zag en hijo izquierdo + zig en raíz
+    Nodo* rotacionZigZag(Nodo* x){
+        x->izq = rotacionZag(x->izq);
+        return rotacionZig(x);
+    }
+
+    // rotación zag-zig: zig en hijo derecho + zag en raíz
+    Nodo* rotacionZagZig(Nodo* x){
+        x->der = rotacionZig(x->der);
+        return rotacionZag(x);
+    }
+
     Nodo* splay(Nodo* raiz, const K& llave){
+        // caso base: árbol vacío o llave encontrada
         if(!raiz || raiz->llave == llave) return raiz;
-        if (llave < raiz->llave){
-            if(!raiz->izq) return raiz;
 
-            // izq, izq
+        if(llave < raiz->llave){
+            // la llave está en el subárbol izquierdo
+            if(!raiz->izq) return raiz; // no existe, retornamos lo más cercano
+
             if(llave < raiz->izq->llave){
+                // zig-zig: la llave está en el subárbol izquierdo-izquierdo
                 raiz->izq->izq = splay(raiz->izq->izq, llave);
-                raiz = rotacionSimpleIzq(raiz);
-            }
-
-            // izq, der
-            if(llave > raiz->izq->llave){
+                raiz = rotacionZig(raiz);       // primera rotación
+            } else if(llave > raiz->izq->llave){
+                // zig-zag: la llave está en el subárbol izquierdo-derecho
                 raiz->izq->der = splay(raiz->izq->der, llave);
-                if(raiz->izq->der)
-                    raiz->izq = rotacionSimpleDer(raiz->izq);
+                if(raiz->izq->der) raiz->izq = rotacionZag(raiz->izq); // rotación interna si existe
             }
+            // segunda rotación (o única en caso zig simple)
+            return raiz->izq ? rotacionZig(raiz) : raiz;
 
-            return raiz->izq ? rotacionSimpleIzq(raiz) : raiz;
+        } else {
+            // la llave está en el subárbol derecho
+            if(!raiz->der) return raiz; // no existe, retornamos lo más cercano
 
-        }
-        else{
-            if(!raiz->der) return raiz;
-
-            // der,izq
-            if(llave < raiz->der->llave){
-                raiz->der->izq = splay(raiz->der->izq, llave);
-                if(raiz->der->izq)
-                    raiz->der = rotacionSimpleIzq(raiz->der);
-            }
-
-            // der, der
-            else if(llave > raiz->der->llave){
+            if(llave > raiz->der->llave){
+                // zag-zag: la llave está en el subárbol derecho-derecho
                 raiz->der->der = splay(raiz->der->der, llave);
-                raiz = rotacionSimpleDer(raiz);
+                raiz = rotacionZag(raiz);       // primera rotación
+            } else if(llave < raiz->der->llave){
+                // zag-zig: la llave está en el subárbol derecho-izquierdo
+                raiz->der->izq = splay(raiz->der->izq, llave);
+                if(raiz->der->izq) raiz->der = rotacionZig(raiz->der); // rotación interna si existe
             }
-
-            return raiz->der ? rotacionSimpleDer(raiz) : raiz;
+            // segunda rotación (o única en caso zag simple)
+            return raiz->der ? rotacionZag(raiz) : raiz;
         }
     }
 
@@ -99,36 +109,34 @@ class SplayTree{
     }
 
     public:
-    SplayTree() : raiz(nullptr), cantidadNodos() {}
+    SplayTree() : raiz(nullptr), cantidadNodos(0) {}
     ~SplayTree(){
         limpiar(raiz);
     }
 
     void insertar(const K& llave, const V& valor){
-        if(!raiz){ // no se encuentra la raiz, se crea
+        if(!raiz){
             raiz = new Nodo(llave, valor);
             cantidadNodos++;
             return;
         }
         raiz = splay(raiz, llave);
-        if(raiz->llave == llave){ // se encuuetra la llave
-            raiz->valor = valor; // cambiamos el valor del valor, lo actualizamos
+        if(raiz->llave == llave){
+            raiz->valor = valor; // ya existe, actualizamos
             return;
         }
 
-        Nodo* nuevoNodo = new Nodo(llave, valor); // no se encuentra la llave, se crea el nodo
+        Nodo* nuevoNodo = new Nodo(llave, valor);
         cantidadNodos++;
-        if(llave < raiz->llave){ // si la llave del nodo nuevo es menor que la raiz, se va a la izquierda
+        if(llave < raiz->llave){
             nuevoNodo->der = raiz;
             nuevoNodo->izq = raiz->izq;
             raiz->izq = nullptr;
-
         } else {
             nuevoNodo->izq = raiz;
             nuevoNodo->der = raiz->der;
             raiz->der = nullptr;
         }
-
         raiz = nuevoNodo;
     }
 
@@ -138,23 +146,22 @@ class SplayTree{
         if(raiz->llave != llave) return false;
         cantidadNodos--;
 
-        if(!raiz->izq) {
+        if(!raiz->izq){
             Nodo* t = raiz;
             raiz = raiz->der;
             delete t;
-        } else{
+        } else {
             Nodo* t = raiz;
             raiz = splay(raiz->izq, llave);
             raiz->der = t->der;
             delete t;
         }
-
         return true;
     }
 
     V* buscar(const K& llave){
         if(!raiz) return nullptr;
-        raiz= splay(raiz,llave);
+        raiz = splay(raiz, llave);
         if(raiz->llave == llave) return &raiz->valor;
         return nullptr;
     }
@@ -167,7 +174,7 @@ class SplayTree{
         if(raiz) raiz = splay(raiz, llave);
     }
 
-    void recorrido(function<void(const K&, const V&)>fn) const{
+    void recorrido(function<void(const K&, const V&)> fn) const{
         recorrido(raiz, fn);
     }
 
@@ -189,5 +196,4 @@ class SplayTree{
         if(raiz) return raiz->llave;
         throw runtime_error("Splay tree está vacío");
     }
-
 };

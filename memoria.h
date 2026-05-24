@@ -14,6 +14,7 @@
 
 struct Metricas{
     int accesosTotales = 0; // total de accesos a memoria
+    // estadísticas de misses y hits
     int hitsLocal = 0;
     int missLocal = 0;
     int hitsGlobal = 0;
@@ -56,23 +57,23 @@ class Memoria{
 };
 
 Memoria::Memoria(int memTotal, int tPagina, int tCacheGlobal): memoriaTotal(memTotal), tamPagina(tPagina), tamCacheGlobal(tCacheGlobal), cacheGlobal(tCacheGlobal){
-    totalPaginas = memoriaTotal / tamPagina;
+    totalPaginas = memoriaTotal / tamPagina; // hacemos el total de páginas que poseemos
     for (int i = 0; i < totalPaginas; i++){
         Pagina p;
-        p.paginaFisica = i;
-        p.valido = false;
+        p.numeroPaginasFisica = i; // hacemos las páginas físicas
+        p.bitValida = false;
         paginasVacias.insertar(i, p);
     }
 
-    cout << "Iniciando memoria paginada..." << "    Memoria total:" << memoriaTotal << endl << "    Tamaño de página:" << tamPagina << endl << "    Páginas totales:" << totalPaginas << endl << "    Cache global:" << tamCacheGlobal << endl;
+    cout << "Iniciando memoria paginada..." << endl << "    Memoria total:" << memoriaTotal << endl << "    Tamaño de página:" << tamPagina << endl << "    Páginas totales:" << totalPaginas << endl << "    Cache global:" << tamCacheGlobal << endl;
 
 
 }
 
 int Memoria::proximaPaginav(const Proceso& proc) const{
-    auto llaves = proc.tablaPagina.llaves();
-    if(llaves.empty()) return 0;
-    return llaves.back() + 1;
+    auto llaves = proc.tablaDePagina.llaves(); // conseguimos las llaves del mapa
+    if(llaves.empty()) return 0; // si no hay llaves el mapa está vacío
+    return llaves.back() + 1; // retornamos la última llave más 1, para hacer que el índice sea uno después que el último
 }
 
 bool Memoria::asignarPaginas(Proceso& proc, int cantidad, int iniciarVirt){
@@ -81,7 +82,7 @@ bool Memoria::asignarPaginas(Proceso& proc, int cantidad, int iniciarVirt){
         return false;
     }
 
-    int paginaVirtualBase = (iniciarVirt >= 0) ? iniciarVirt : proximaPaginav(proc);
+    int paginaVirtualBase = (iniciarVirt >= 0) ? iniciarVirt : proximaPaginav(proc); // 
     for(int i = 0; i < cantidad; i++){
         int llaveFisica;
         Pagina paginaFisica;
@@ -89,7 +90,7 @@ bool Memoria::asignarPaginas(Proceso& proc, int cantidad, int iniciarVirt){
         paginasVacias.eliminar(llaveFisica);
 
         int paginaVirtual = paginaVirtualBase + i;
-        Pagina nueva(paginaVirtual, llaveFisica, proc.id);
+        Pagina nueva(paginaVirtual, llaveFisica, proc.idProceso);
         nueva.touch();
 
         paginasUsadas.insertar(llaveFisica, nueva);
@@ -99,7 +100,7 @@ bool Memoria::asignarPaginas(Proceso& proc, int cantidad, int iniciarVirt){
 }
 
 bool Memoria::nuevoProceso(const string& idp, int memoria){
-    cout << "Nuevo proceso" << idp << endl;
+    cout << "Nuevo proceso: " << idp << endl;
     if(procesos.count(idp)){
         cout << "! Error, ya hay un proceso con esta id" << endl;
         return false;
@@ -132,15 +133,15 @@ bool Memoria::terminarProceso(const string& idp){
     }
     Proceso& proc = procesos[idp];
 
-    auto llaves = proc.tablaPagina.llaves();
+    auto llaves = proc.tablaDePagina.llaves();
     for (int paginaVirtual: llaves){
-        Pagina* p= proc.tablaPagina.buscar(paginaVirtual);
+        Pagina* p= proc.tablaDePagina.buscar(paginaVirtual);
         if(p){
-            int pFisica = p->paginaFisica;
+            int pFisica = p->numeroPaginasFisica;
             paginasUsadas.eliminar(pFisica);
             Pagina pagVacia;
-            pagVacia.paginaFisica = pFisica;
-            pagVacia.valido = false;
+            pagVacia.numeroPaginasFisica = pFisica;
+            pagVacia.bitValida = false;
             paginasVacias.insertar(pFisica, pagVacia);
         }
     }
@@ -170,7 +171,7 @@ bool Memoria::acceso(const string& idp, int address){
     Proceso& proc = procesos[idp];
     metricas.accesosTotales++;
 
-    Pagina* pagProceso = proc.tablaPagina.buscar(paginaVirtual);
+    Pagina* pagProceso = proc.tablaDePagina.buscar(paginaVirtual);
     if(!pagProceso){
         cout << "! Error, no está asignada al proceso" << endl;
         return false;
@@ -183,7 +184,7 @@ bool Memoria::acceso(const string& idp, int address){
     if(inLocal){
         metricas.hitsLocal++;
         cout << "hit en caché local" << endl;
-        proc.tablaPagina.hacerSplay(paginaVirtual);
+        proc.tablaDePagina.hacerSplay(paginaVirtual);
         pagProceso->touch();
         proc.cacheLocal.insertar(idp, paginaVirtual, *pagProceso);
         cout << endl;
@@ -201,7 +202,7 @@ bool Memoria::acceso(const string& idp, int address){
         cout << "hit en caché global" << endl;
         pagProceso->touch();
         proc.cacheLocal.insertar(idp, paginaVirtual, *pagProceso);
-        proc.tablaPagina.hacerSplay(paginaVirtual);
+        proc.tablaDePagina.hacerSplay(paginaVirtual);
         cout << endl;
         return true;
     }
@@ -209,7 +210,7 @@ bool Memoria::acceso(const string& idp, int address){
     metricas.missGlobal++;
     cout << "miss en caché global" << endl;
     pagProceso->touch();
-    proc.tablaPagina.hacerSplay(paginaVirtual);
+    proc.tablaDePagina.hacerSplay(paginaVirtual);
     proc.cacheLocal.insertar(idp, paginaVirtual, *pagProceso);
     cacheGlobal.insertar(idp, paginaVirtual, *pagProceso);
     cout << endl;
@@ -246,9 +247,9 @@ bool Memoria::asignar(const string& idp, int memoriaExtra){
 }
 
 bool Memoria::memoriaLibre(const string& idp, int inicioAddress, int bytes) {
-    cout << "Memoria libre: " << idp << ". " << bytes << " bytes";
+    cout << "Memoria libre: " << idp << ". " << bytes << " bytes" << endl;
     if(!procesos.count(idp)){
-        cout << "! Error, el proceso no existe";
+        cout << "! Error, el proceso no existe" << endl;
         return false;
     }
     if(inicioAddress < 0 || bytes <= 0){
@@ -262,19 +263,19 @@ bool Memoria::memoriaLibre(const string& idp, int inicioAddress, int bytes) {
     int liberado = 0;
 
     for(int paginaV = inicioPaginaVirtual; paginaV <= finalPaginaVirtual; paginaV++){
-        Pagina* p = proc.tablaPagina.buscar(paginaV);
+        Pagina* p = proc.tablaDePagina.buscar(paginaV);
         if(!p){
             cout << "* Página virtual no asignada" << endl;
             continue;
         }
-        int paginaF = p->paginaFisica;
+        int paginaF = p->numeroPaginasFisica;
         proc.cacheLocal.eliminar(idp, paginaV);
         cacheGlobal.eliminar(idp, paginaV);
 
         paginasUsadas.eliminar(paginaF);
         Pagina paginaLibre;
-        paginaLibre.paginaFisica = paginaF;
-        paginaLibre.valido = false;
+        paginaLibre.numeroPaginasFisica = paginaF;
+        paginaLibre.bitValida = false;
         paginasVacias.insertar(paginaF, paginaLibre);
 
         proc.eliminarPagina(paginaV);
@@ -313,15 +314,15 @@ void Memoria::printMetricas() const{
 void Memoria::printProceso(const string& idp)const {
     auto it = procesos.find(idp);
     if(it == procesos.end()){
-        cout << "! Error, no exist el proceso" << endl;
+        cout << "! Error, no existe el proceso" << endl;
         return;
     }
     it->second.mostrar();
     it->second.cacheLocal.mostrar("CacheLocal-" + idp);
 
     cout << "Tabla de páginas" << endl;
-    it->second.tablaPagina.recorrido([](const int& pv, const Pagina& p){
-        cout << "   pág vir=" << pv << "> pág fís=" << p.paginaFisica << ". referencias = " << p.cantidadReferencia << endl;
+    it->second.tablaDePagina.recorrido([](const int& pv, const Pagina& p){
+        cout << "   pág vir=" << pv << "> pág fís=" << p.numeroPaginasFisica << ". referencias = " << p.cantidadReferencias << endl;
     });
 
 

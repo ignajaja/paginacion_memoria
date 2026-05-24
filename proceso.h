@@ -8,14 +8,14 @@
 
 class Proceso{
     public:
-    string id;
+    string idProceso;
     int memoriaSolicitada;
     int paginasAsignadas;
-    SplayTree<int, Pagina> tablaPagina;
     Cache cacheLocal;
+    SplayTree<int, Pagina> tablaDePagina;
 
-    Proceso():id(""), memoriaSolicitada(0), paginasAsignadas(0), cacheLocal(0){}
-    Proceso(const string& idp, int mem, int tamPag): id(idp), memoriaSolicitada(mem), paginasAsignadas(0), cacheLocal(0) {}
+    Proceso():idProceso(""), memoriaSolicitada(0), paginasAsignadas(0), cacheLocal(0){}
+    Proceso(const string& idp, int mem, int tamPag): idProceso(idp), memoriaSolicitada(mem), paginasAsignadas(0), cacheLocal(0) {}
 
 
 
@@ -25,13 +25,13 @@ class Proceso{
     }
 
     void agregarPaginas(const Pagina& pagina){
-        tablaPagina.insertar(pagina.paginaVirtual, pagina);
+        tablaDePagina.insertar(pagina.numeroPaginasVirtual, pagina);
         paginasAsignadas++;
         actualizarCacheLocal();
     }
 
     bool eliminarPagina(int pagv){
-        if(tablaPagina.eliminar(pagv)){
+        if(tablaDePagina.eliminar(pagv)){
             paginasAsignadas--;
             actualizarCacheLocal();
             return true;
@@ -40,10 +40,10 @@ class Proceso{
     }
 
     Pagina* buscarPagina(int pagv){
-        return tablaPagina.buscar(pagv);
+        return tablaDePagina.buscar(pagv);
     }
 
     void mostrar() const{
-        cout<< " Proceso:" << id << " Memoria Solicitada:" << memoriaSolicitada << " Paginas asignadas:" << paginasAsignadas << " Cache Local:" << cacheLocal.getTamMax() << " Usado:" << cacheLocal.tamActual() << endl;
+        cout<< " Proceso:" << idProceso << " Memoria Solicitada:" << memoriaSolicitada << " Paginas asignadas:" << paginasAsignadas << " Cache Local:" << cacheLocal.getTamMax() << " Usado:" << cacheLocal.tamActual() << endl;
     }
 };

@@ -9,20 +9,22 @@ using namespace std;
 template <typename K, typename V>
 class AVL{
 private: // primero hacemos todas las funciones
-    struct Nodo{
+    struct Nodo{ // hacemos la estructura de nodo para que sea lo que el avl tiene dentro
         K llave;
         V valor;
         Nodo* izq;
         Nodo* der;
         int altura;
 
-        Nodo(const K& k, const V& v) : llave(k), valor(v), izq(nullptr), der(nullptr), altura(1) {}
+        Nodo(const K& k, const V& v) : llave(k), valor(v), izq(nullptr), der(nullptr), altura(1) {} // constructor
 
     };
 
-    Nodo* raiz;
+    // variables que vamos a necesitar
+    Nodo* raiz; 
     int cantidadNodos;
 
+    // en el archivo dice que debe llamarse altura, pero para que no hayan confunciones se ha llamado getAltura
     int getAltura(Nodo* n){
         return n ? n->altura : 0; // null si no existe el nodo, de otra manera da la altura del mismo
 
@@ -39,6 +41,12 @@ private: // primero hacemos todas las funciones
     }
 
     Nodo* rotarDerecha(Nodo* y){
+        // lógica:
+        // x va a ser el izquierdo de y, que nos lo dan por parámetro
+        // t va a ser el derecho del izquierdo de y
+        // ahora el derecho de x (el derecho del izquierdo de y) va a ser y
+        // y el izquierdo de y va a ser t (que es el derecho del izquierdo de y)
+        // al final se le pasa el hijo derecho de x a y, y pasa x a ser la raiz mientras y se vuelve su hijo izquierdo
         Nodo* x = y->izq;
         Nodo* t = x->der; // t es un temporario que nos va a ayudar a guardar un nodo mientras cambiamos las posiciones
 
@@ -52,6 +60,7 @@ private: // primero hacemos todas las funciones
     }
 
     Nodo* rotarIzquierda(Nodo* x){
+        // mismo que rotarDerecha, pero con la lógica invertida
         Nodo* y = x->der;
         Nodo* t = y->izq; // t es un temporario que nos va a ayudar a guardar un nodo mientras cambiamos las posiciones
 
@@ -90,25 +99,25 @@ private: // primero hacemos todas las funciones
 
     Nodo* insertar(Nodo* n, const K& llave, const V& valor){
         if(n == nullptr){
-            cantidadNodos++;
+            cantidadNodos++; // aumentamos la cantidad de nodos  y creamos uno nuevo
             return new Nodo(llave, valor);
         }
 
-        if(llave < n->llave){
+        if(llave < n->llave){ // si la llave que queremos ingresar es menor que la del nodo actual, lo comparamos con el de su izquierda 
             n->izq = insertar(n->izq, llave, valor);
-        } else if(llave > n->llave){
+        } else if(llave > n->llave){ // si la llave que queremos ingresar es mayor que la del nodo actual, lo comparamos con el de su derecha
             n->der = insertar(n->der, llave, valor);
         } else {
-            n->valor = valor;
+            n->valor = valor; // ingresamos el valor
             return n;
         }
-        return balancear(n);
+        return balancear(n); // balanceamos para que el árbol siga siendo un avl
     }
 
-    Nodo* nodoMenor(Nodo* n) const{
+    Nodo* nodoMenor(Nodo* n) const{ // buscamos el nodo menor, lo usamos para encontrar el menor nodo del subárbol derecho de la raiz
         Nodo* actual = n;
         while(actual->izq){
-            actual = actual->izq;
+            actual = actual->izq; // nos vamos a la izquierda de todo
         }
         return actual;
     }
@@ -134,26 +143,27 @@ private: // primero hacemos todas las funciones
                     delete t;
                 }
             } else {
-                Nodo* t = nodoMenor(n->der);
+                Nodo* t = nodoMenor(n->der); // temporal que va a ser el menor nodo del subarbol derecho de la raiz
                 n->llave = t->llave;
                 n->valor = t->valor;
-                bool enc = false;
+                bool enc = false; 
                 n->der = eliminar(n->der, t->llave, enc);
-                cantidadNodos++;
+                cantidadNodos++; 
             }
 
         }
-        return balancear(n);
+        return balancear(n); // siempre balanceamos
     }
 
     Nodo* buscar(Nodo* n, const K& llave) const {
-        if(!n) return nullptr;
-        if(llave == n->llave) return n;
-        if(llave < n->llave) return buscar(n->izq, llave);
-        return buscar(n->der, llave);
+        if(!n) return nullptr; // si no existe se retorna null
+        if(llave == n->llave) return n; // si se encuentra lo retornamos
+        if(llave < n->llave) return buscar(n->izq, llave); // si la llave que buscamos es menor a la llave del nodo actual, se busca a su izquierda
+        return buscar(n->der, llave); // de otro modo, se busca a su derecha, debido a que la única de las opciones que nos falta es que sea mayor
 
     }
 
+    // function lo que hace es guardar cualquier tipo de dato dentro, como un contenedor univesal, cosa que no puede hacer una lista o un vector
     void inOrden(Nodo* n, function<void(const K&, const V&)> fn) const {
         if(!n) return;
         inOrden(n->izq, fn);
@@ -161,7 +171,7 @@ private: // primero hacemos todas las funciones
         inOrden(n->der, fn);
     }
 
-    void limpiar(Nodo* n){
+    void limpiar(Nodo* n){ // recorremos todo el árbol y eliminamos nodo a nodo
         if(!n) return;
         limpiar(n->izq);
         limpiar(n->der);
@@ -171,14 +181,14 @@ private: // primero hacemos todas las funciones
     void recolectarLlaves(Nodo* n, vector<K>& llaves) const {
         if(!n) return;
         recolectarLlaves(n->izq, llaves);
-        llaves.push_back(n->llave);
+        llaves.push_back(n->llave); // guardamos la llave en un vector
         recolectarLlaves(n->der, llaves);
     }
 
 public:
     AVL() : raiz(nullptr), cantidadNodos(0) {}
     ~AVL(){
-        limpiar(raiz);
+        limpiar(raiz); // para eliminarlo, lo limpiamos
     }
 
     void insertar(const K& llave, const V& valor){
