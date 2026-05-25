@@ -31,7 +31,7 @@ class Operacion{
 
         if(operacion == "NEW_PROCESS"){
             if(tokens.size() < 3){
-                cout << "! Error, para hacer un NEW_PROCESS debe excribirse \"NEW_PROCESS <idProceso> <memoria>\"" << endl;
+                cout << "! Error, para hacer un NEW_PROCESS debe escribirse \"NEW_PROCESS <idProceso> <memoria>\"" << endl;
                 return false;
             }
             return mem->nuevoProceso(tokens[1], stoi(tokens[2]));
@@ -164,7 +164,7 @@ class Operacion{
             try {
                 parseExecute(op);
             } catch (const exception& e) {
-                cout << "! Error ejecutando operacion: \"" << op << "\" -> " << e.what() << endl;
+                cout << "! Error ejecutando operación: \"" << op << "\" -> " << e.what() << endl;
             }
         }
 
@@ -202,7 +202,7 @@ class Operacion{
         cout << " - END_PROCESS <idProceso>" << endl;
         cout << " - ACCESS <idProceso> <dirección>" << endl;
         cout << " - ALLOCATE <idProceso> <memoria>" << endl;
-        cout << " - FREE <idProceso> <dirección inicla> <bytes>" << endl;
+        cout << " - FREE <idProceso> <dirección inicial> <bytes>" << endl;
         cout << " - PRINT_STATE" << endl;
         cout << " - PRINT_METRICS" << endl;
         cout << " - PRINT_PROCESS" << endl;

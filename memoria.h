@@ -109,7 +109,7 @@ bool Memoria::nuevoProceso(const string& idp, int memoria){
     int pagNecesarias = (memoria + tamPagina -1) / tamPagina;
 
     if(paginasVacias.size() < pagNecesarias){
-        cout << "! Error, no hay suficiente memoria" << pagNecesarias << endl;
+        cout << "! Error, no hay suficiente memoria, por " << pagNecesarias << " páginas" << endl;
         return false;
     }
 
